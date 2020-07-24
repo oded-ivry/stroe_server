@@ -21,7 +21,6 @@
     "mongoose": "^5.9.16",
     "nodemon": "^2.0.4",
     "primus": "^7.3.5",
-    "primus-rooms": "^3.4.1",
     "sockjs": "^0.3.20",
     "sockjs-client": "^1.4.0"
   }

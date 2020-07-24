@@ -2,7 +2,7 @@
 require("dotenv").config();
 
 const Primus = require("primus");
-const Rooms = require("primus-rooms");
+// const fs = require("fs");
 
 //getting  user router
 const user_router = require("./modules/user/user.router");
@@ -23,7 +23,7 @@ app.use(cors());
 
 //The process.env property returns an object containing the user environment
 //Then we distructure what we need from that object
-const { API_PORT, API_HOST } = process.env;
+const { API_PORT, API_HOST, DB_URI } = process.env;
 const port = API_PORT || 3000;
 
 //allows express the ability to json parse
@@ -52,60 +52,21 @@ app.use("*", not_found);
   //start listening on a certain port
   let server = await app.listen(port, API_HOST, () => {
     console.log(`Store app listening on  http://${API_HOST}:${API_PORT} !`);
+
+    // fs.createReadStream(__dirname + "/public-chat-client.html");
   });
   //------------------------------------------------------------------**
   //-------------------------chat server------------------------------**
   //------------------------------------------------------------------**
   let primus = new Primus(server, { transformer: "sockjs" });
-  // add rooms to Primus
-  primus.plugin("rooms", Rooms);
 
   primus.on("connection", (spark) => {
     console.log("--> spark.id: ", spark.id);
 
-    spark.on("data", (data = {}) => {
-      console.log(data, "--> data:");
-
-      const { action, room, message } = data;
-
-      console.log(`action:`, action);
-      console.log(`room:`, room);
-      console.log(`message:`, message);
-
-      // join a room
-      if (action === "join") {
-        spark.join(room, () => {
-          // send message to this client
-          spark.write("you joined room " + room);
-          // send message to all clients except this one
-          spark
-            .room(room)
-            .except(spark.id)
-            .write(`${spark.id} joined room ${room}`);
-        });
-      }
-
-      // leave a room
-      if (action === "leave") {
-        spark.leave(room, () => {
-          // send message to this client
-          spark.write("you left room " + room);
-          // send message to all clients except this one
-          spark
-            .room(room)
-            .except(spark.id)
-            .write(spark.id + " left room " + room);
-        });
-      }
-      // Send a message to a room
-      if (message && room) {
-        console.log(`writing message to room  ${room}`);
-        spark.room(room).write(message);
-      }
-      if (message && room === undefined) {
-        console.log(`writing message to all  ${message}`);
-        primus.write(message);
-      }
+    spark.on("data", (data) => {
+      console.log(data);
+      //write incoming message to all connected sockets...
+      primus.write(data);
     });
   });
 })().catch(console.log);

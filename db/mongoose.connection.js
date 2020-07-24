@@ -1,8 +1,11 @@
 const mongoose = require("mongoose");
 
-const { DB_URI } = process.env;
+// const { DB_URI } = process.env;
 
-const uri = DB_URI;
+// const uri = DB_URI;
+const { DB_HOST, DB_PORT, DB_NAME } = process.env;
+
+const uri = `mongodb://${DB_HOST}:${DB_PORT}/${DB_NAME}`;
 
 //all the option you want to set when connecting to mongodb
 //some are required to eliminate mongodb default warnings
